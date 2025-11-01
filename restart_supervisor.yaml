@@ -1,0 +1,17 @@
+---
+- name: Check and restart Supervisor service if needed
+  hosts: "{{ target_hosts }}"
+  become: yes
+  tasks:
+    - name: Check Supervisor service status
+      systemd:
+        name: supervisor
+        state: started
+      register: supervisor_status
+      failed_when: false
+
+    - name: Restart Supervisor service if not running
+      systemd:
+        name: supervisor
+        state: restarted
+      when: supervisor_status.status != 'running'

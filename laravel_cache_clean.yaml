@@ -1,0 +1,22 @@
+---
+- name: Clear and cache Laravel config, routes and Filament cache
+  hosts: "{{ target_hosts }}"
+  become: yes
+  vars:
+    app_path: "{{ app_path | default('/var/www/html') }}"
+
+  tasks:
+    - name: Run Laravel artisan config:cache
+      command: php artisan config:cache
+      args:
+        chdir: "{{ app_path }}"
+
+    - name: Run Laravel artisan route:cache
+      command: php artisan route:cache
+      args:
+        chdir: "{{ app_path }}"
+
+    - name: Run Laravel artisan view:clear
+      command: php artisan view:clear
+      args:
+        chdir: "{{ app_path }}"

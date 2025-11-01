@@ -1,0 +1,29 @@
+---
+- name: Gather system performance metrics
+  hosts: "{{ target_hosts }}"
+  gather_facts: yes
+  become: yes
+  tasks:
+    - name: Get CPU load averages
+      command: uptime
+      register: uptime_output
+
+    - name: Get free memory and swap
+      command: free -m
+      register: free_output
+
+    - name: Get disk usage for root partition
+      command: df -h /
+      register: disk_output
+
+    - name: Display CPU load
+      debug:
+        msg: "CPU Load: {{ uptime_output.stdout }}"
+
+    - name: Display memory usage
+      debug:
+        msg: "Memory and Swap Usage:\n{{ free_output.stdout }}"
+
+    - name: Display disk usage
+      debug:
+        msg: "Disk Usage:\n{{ disk_output.stdout }}"

@@ -1,0 +1,18 @@
+---
+- name: Restart PHP-FPM and Nginx services
+  hosts: "{{ target_hosts }}"
+  become: yes
+  vars:
+    php_fpm_service: "php8.3-fpm"
+    web_server_service: "nginx"
+
+  tasks:
+    - name: Restart PHP-FPM service
+      systemd:
+        name: "{{ php_fpm_service }}"
+        state: restarted
+
+    - name: Restart web server service
+      systemd:
+        name: "{{ web_server_service }}"
+        state: restarted

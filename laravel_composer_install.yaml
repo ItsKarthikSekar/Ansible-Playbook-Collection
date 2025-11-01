@@ -1,0 +1,14 @@
+---
+- name: Clear and cache Laravel config, routes and Filament cache
+  hosts: "{{ target_hosts }}"
+  become: yes
+  vars:
+    app_path: "{{ app_path | default('/var/www/html') }}"
+  tasks:
+    - name: Run Composer install
+      composer:
+        command: install
+        working_dir: "{{ app_path }}"
+        prefer_dist: yes
+        no_dev: yes
+        optimize_autoloader: yes

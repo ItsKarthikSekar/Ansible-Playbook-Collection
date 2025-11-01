@@ -1,0 +1,35 @@
+---
+- name: Apply permissions to project files and directories
+  hosts: "{{ target_hosts }}"
+  become: yes
+  vars:
+    app_path: "{{ app_path | default('/var/www/html') }}"
+  tasks:
+    - name: Set ownership to www-data:www-data recursively
+      file:
+        path: "{{ app_path }}"
+        owner: www-data
+        group: www-data
+        recurse: yes
+
+    - name: "Set group sticky bit on {{ app_path }}"
+      file:
+        path: "{{ app_path }}"
+        mode: "g+s"
+
+    - name: "Apply 755 mode to directories in {{ app_path }}"
+      file:
+        path: "{{ app_path }}"
+        mode: "0755"
+        recurse: yes
+        state: directory
+
+    - name: "Set file permissions to 644 in {{ app_path }}"
+      find:
+        paths: "{{ app_path }}"
+        file_type: file
+
+    - name: "Apply 644 mode to files in {{ app_path }}"
+      file:
+        path: "{{ app_path }}"
+        mode: "0644"

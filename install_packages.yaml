@@ -1,0 +1,71 @@
+---
+- name: Install required PHP and utilities
+  hosts: "{{ target_hosts }}"
+  become: yes
+  tasks:
+    - name: Install PHP 8.3 and dependencies
+      apt:
+        pkg:
+          - php8.3-fpm
+          - php8.3-cli
+          - php8.3-mysql
+          - php8.3-curl
+          - php8.3-gd
+          - php8.3-mbstring
+          - php8.3-xml
+          - php8.3-intl
+          - php8.3-zip
+          - php8.3-gmp
+          - supervisor
+          - poppler-utils
+          - unzip
+        state: present
+        update_cache: yes
+
+    - name: Install Certbot and NGINX plugin for SSL
+      apt:
+        pkg:
+          - certbot
+          - python3-certbot-nginx
+        state: present
+        update_cache: yes
+
+    - name: Install nodejs
+      apt:
+        pkg:
+          - npm
+        state: present
+        update_cache: yes
+
+    - name: Check if composer is exist
+      stat:
+        path: /usr/local/bin/composer
+      register: composer_stat
+
+    - name: Trigger Composer install if missing
+      meta: flush_handlers
+      when: not composer_stat.stat.exists
+      notify: Install Composer
+
+  handlers:
+    - name: Install Composer
+      block:
+        - name: Download Composer installer
+          get_url:
+            url: https://getcomposer.org/installer
+            dest: /tmp/composer-setup.php
+            mode: "0644"
+          become: yes
+
+        - name: Install Composer
+          command: >
+            php /tmp/composer-setup.php --install-dir=/usr/local/bin --filename=composer
+          args:
+            creates: /usr/local/bin/composer
+          become: yes
+
+        - name: Remove Composer installer
+          file:
+            path: /tmp/composer-setup.php
+            state: absent
+          become: yes

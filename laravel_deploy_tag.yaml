@@ -1,0 +1,40 @@
+---
+- name: Deploy Laravel application with tag checkout, composer, artisan, and service restart
+  hosts: "{{ target_hosts }}"
+  become: yes
+  vars:
+    app_path: "{{ app_path | default('/var/www/html') }}"
+    repo_url: "<REPOSITORY_URL>"
+    deploy_tag: "{{ tag | default('v1.1.0') }}"
+
+  tasks:
+    - name: Checkout specific tag in Laravel repository
+      git:
+        repo: "{{ repo_url }}"
+        dest: "{{ app_path }}"
+        version: "{{ deploy_tag }}"
+        force: yes
+        accept_hostkey: yes
+
+    - import_playbook: composer_install.yaml
+      vars:
+        target_hosts: "{{ target_hosts }}"
+        app_path: "{{ app_path }}"
+
+    - import_playbook: apply_permissions.yaml
+      vars:
+        target_hosts: "{{ target_hosts }}"
+        app_path: "{{ app_path }}"
+
+    - import_playbook: cache_clean.yaml
+      vars:
+        target_hosts: "{{ target_hosts }}"
+        app_path: "{{ app_path }}"
+
+    - import_playbook: service_restart.yaml
+      vars:
+        target_hosts: "{{ target_hosts }}"
+
+    - import_playbook: restart_supervisor.yaml
+      vars:
+        target_hosts: "{{ target_hosts }}"
